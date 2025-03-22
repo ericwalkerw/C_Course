@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 #define FILENAME "log.txt"   // Ten file log
 #define MAX 5000             // Do dai toi da cua chuoi fileStr
@@ -55,13 +54,13 @@ void splitLogLine(char str[])
     }
 }
 
-// Tach dia chi thiet bi tu dong log
+// Tach dia chi thiet bi
 void extractSwitchInfo(char line[], char nwk[], int *endPoint)
 {
-    char *start = strstr(line, "zwave-");
+    char *start = strstr(line, "zwave-"); //lay vi tri bat dau tu zwave
     if (start != NULL)
     {
-        sscanf(start, "zwave-%[^:]:4-%d", nwk, endPoint);
+        sscanf(start, "zwave-%[^:]:4-%d", nwk, endPoint); //ham lay ra phan tu theo format co dinh trong chuoi
     }
 }
 
@@ -69,7 +68,7 @@ void extractSwitchInfo(char line[], char nwk[], int *endPoint)
 int convertToMilliseconds(char timestamp[])
 {
     int hour, min, sec, ms;
-    sscanf(timestamp, "2019-10-23%d:%d:%d.%d", &hour, &min, &sec, &ms);
+    sscanf(timestamp, "2019-10-23%d:%d:%d.%d", &hour, &min, &sec, &ms); //lay phan tu theo format co dinh
     int totalMs = (((hour * 60 + min) * 60 + sec) * 1000) + ms;
     return totalMs;
 }
@@ -77,13 +76,13 @@ int convertToMilliseconds(char timestamp[])
 // Dem so ban tin gui di (cmd = "set")
 void soBanTinGuiDi()
 {
-    printf("===== SO BAN TIN GUI DI =====\n");
+    printf("\n===== SO BAN TIN GUI DI =====\n");
     int count = 0;
     char key[50] = "\"cmd\":\"set\"";
 
     for (int i = 0; i < lineCount; i++)
     {
-        if (strstr(logArr[i], key) != NULL)
+        if (strstr(logArr[i], key) != NULL) //ham tim chuoi con "key" trong chuoi "LogArr[i]"
         {
             printf("%s\n", logArr[i]);
             count++;
@@ -96,7 +95,7 @@ void soBanTinGuiDi()
 // Dem so ban tin gui den thiet bi voi dia chi nwk duoc nhap
 void soBanTinGuiDenThietBi()
 {
-    printf("==== SO BAN TIN GUI DEN THIET BI ====");
+    printf("\n==== SO BAN TIN GUI DEN THIET BI ====");
     int count = 0;
     char key[50] = "\"cmd\":\"set\"";
     char keyNetwork[50];
@@ -123,7 +122,7 @@ void soBanTinGuiDenThietBi()
 // Dem so cong tac khac nhau (theo nwk va endpoint)
 void soCongTac()
 {
-    printf("==== SO CONG TAC ====");
+    printf("\n==== SO CONG TAC ====");
     char key[50] = "\"cmd\":\"set\"";
     char keySwitch[50] = "\"type\":\"switch\"";
     char nwkList[50][50];
@@ -169,7 +168,7 @@ void soCongTac()
 // Dem so ban tin bi loi (gui di nhung khong nhan duoc phan hoi dung reqid)
 void soBanTinGuiLoi()
 {
-    printf("==== SO BAN TIN GUI LOI ====\n");
+    printf("\n==== SO BAN TIN GUI LOI ====\n");
     int count = 0;
 
     for (int i = 0; i < lineCount - 1; i += 2)
@@ -199,9 +198,9 @@ void soBanTinGuiLoi()
 }
 
 // Tinh do tre lon nhat va trung binh giua cac cap ban tin hop le (reqid giong nhau)
-void thoiGianTreLonNhat()
+void thoiGianTre()
 {
-    printf("==== DO TRE BAN TIN ====\n");
+    printf("\n==== DO TRE BAN TIN ====\n");
     int maxDelay = 0;
     int tbDelay = 0;
     int count = 0;
@@ -261,12 +260,12 @@ int main()
 //            printf("\nLine %d: %s\n", i, logArr[i]);
 //        }
 
-        // Goi cac ham xu ly (bo comment ham muon test)
-//         soBanTinGuiDi();
-//         soBanTinGuiDenThietBi();
-//         soCongTac();
-//         soBanTinGuiLoi();
-         thoiGianTreLonNhat();
+//         Goi cac ham xu ly
+         soBanTinGuiDi();
+         soBanTinGuiDenThietBi();
+         soCongTac();
+         soBanTinGuiLoi();
+         thoiGianTre();
     }
 
     return 0;

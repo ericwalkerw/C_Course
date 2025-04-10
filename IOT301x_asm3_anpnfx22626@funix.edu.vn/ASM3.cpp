@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #define MAX_ROW 9
 #define MAX_COLUMN 9
@@ -66,75 +67,108 @@ point_t deQueue(Queue *q) { //Lay phan tu ra khoi hang
 }
 
 bool checkCoordinate(int row, int col) {
-    bool ret = false;
-    if ((0 <= row ) && (0 <= col)) {
-        ret = true;
+    return (row >= 0 && row < MAX_ROW && col >= 0 && col < MAX_COLUMN);
+}
+
+void findSurroundingPoint(int row, int col, point_t* surroundingPnt[4], int *count) {
+    int rowIndex[4] = {-1, 0, 0, 1};
+    int colIndex[4] = {0, -1, 1, 0};
+    int tempCnt = 0;
+    for (int i = 0; i < 4; i++) {
+        int row_i = row + rowIndex[i];
+        int col_i = col + colIndex[i];
+        if (checkCoordinate(row_i, col_i) && matrix[row_i][col_i].value == 1) {
+            surroundingPnt[tempCnt] = &matrix[row_i][col_i];
+            tempCnt++;
+        }
     }
-    return ret;
+    *count = tempCnt;
 }
 
-void findSurroundingPoint(int row, int col, point_t surroundingPnt[4], int *count){
-	int rowIndex[4] = {-1, 0, 0, 1};
-	int colIndex[4] = {0, -1, 1, 0};
-	int tempCnt = 0; //Khoi tao bien dem so luong cac nut co the di quanh 1 vi tri
-	for(int i = 0; i < 4; i++){
-		int row_i = row + rowIndex[i];
-		int col_i = col + colIndex[i];
-		if (checkCoordinate(row_i, col_i) && matrix[row_i][col_i].value == 1) {
-    		surroundingPnt[tempCnt] = matrix[row_i][col_i];
-    		tempCnt++;
-		}
-	}
-	*count = tempCnt;
-}
+void findShortestPath(int row, int col) {
+    Queue queue;
+    initQueue(&queue);
+    matrix[0][0].visited = true;
+    enQueue(&queue, matrix[0][0]);
+    bool found = false;
 
-void findShortestPath (int row, int col) {
-	Queue queue; //khai bao hang doi
-	initQueue(&queue); //khoi tao hang doi
-	matrix[0][0].visited = true; //danh dau diem da qua
-	enQueue(queue, matrix[0][0]); //them vao hang doi
-	bool found = false;
-	
-	while (!isEmpty(queue) && !found) {
-        point_t p = deQueue(&queue);// lay ra phan tu dau tien
-        point_t surroundingPnt[4]; //Mang luu tru cac nut xung quanh
+    while (!isEmpty(queue) && !found) {
+        point_t p = deQueue(&queue);
+        point_t* surroundingPnt[4];
         int count;
-        findSurroundingPoint(p.row, p.column, surroundingPnt, &count); //Tim cac nut xung quanh cua nut p
-		//=> ket qua se tra ra 4 nut xung quanh nut p
-        for (int i = 0; i < count; i++) { //Duyet lan luot cac nut xung quanh cua p
-            point_t next = surroundingPnt[i]; //nut i trong cac nut xung quanh p
-            if (!next.visited) { //Kiem tra xem da di qua nut nay chua => chua di qua 
-                next.visited = true;
-                next.prev = &p; //luu tru nut truoc do
-                if (next.row == row && next.column == col) {
+        findSurroundingPoint(p.row, p.column, surroundingPnt, &count);
+        for (int i = 0; i < count; i++) {
+            point_t* next = surroundingPnt[i];
+            if (!next->visited) {
+                next->visited = true;
+                next->prev = &matrix[p.row][p.column];
+                if (next->row == row && next->column == col) {
                     found = true;
                     break;
                 } else {
-                    enQueue(&queue, next);
+                    enQueue(&queue, *next);
                 }
             }
         }
     }
 
     if (found) {
-        //Truy nguoc va in ra duong di
-        point_t *current = &matrix[dong][cot];
-        printf("Duong di tu vi tri (0,0) toi (%d,%d):\n", row, col);
+        // Truy ngược và lưu đường đi vào danh sách
+        point_t *current = &matrix[row][col];
+        point_t *path[MAX_ROW * MAX_COLUMN]; // Mảng lưu trữ đường đi
+        int path_length = 0;
+    
         while (current != NULL) {
-            printf("(%d,%d) ", current->row, current->column);
+            path[path_length++] = current;
             current = current->prev;
+        }
+    
+        // In đường đi từ điểm bắt đầu đến điểm đích
+        printf("Duong di tu vi tri (0,0) toi (%d,%d): ", row, col);
+        for (int i = path_length - 1; i >= 0; i--) {
+            printf("(%d,%d) ", path[i]->row, path[i]->column);
         }
         printf("\n");
     } else {
-        printf("Kh�ng c� duong di tu (0,0) den (%d,%d)\n", dong, cot);
+        printf("Khong co duong di tu (0,0) den (%d,%d)\n", row, col);
     }
 }
 
-void input(){
-	
+void input() {
+    int targetRow, targetCol;
+    int temp[9][9] = {
+        {1,0,0,0,1,0,1,1,0},
+        {1,1,0,1,1,1,0,0,1},
+        {0,1,0,0,0,0,0,1,0},
+        {0,1,0,0,0,0,0,0,0},
+        {0,1,1,1,0,0,0,0,0},
+        {0,1,0,1,0,0,0,0,0},
+        {0,1,1,1,1,1,0,0,0},
+        {0,1,0,1,0,1,0,0,0},
+        {1,1,1,1,1,1,1,1,1}
+    };
+
+    // Khởi tạo ma trận điểm với các giá trị
+    for (int i = 0; i < MAX_ROW; i++) {
+        for (int j = 0; j < MAX_COLUMN; j++) {
+            matrix[i][j].value = temp[i][j];
+            matrix[i][j].row = i;
+            matrix[i][j].column = j;
+            matrix[i][j].visited = false;
+            matrix[i][j].prev = NULL;
+        }
+    }
+
+    do {
+        printf("Nhap toa do dich (row col) (0 <= row < %d, 0 <= col < %d): ", MAX_ROW, MAX_COLUMN);
+        scanf("%d %d", &targetRow, &targetCol);
+    } while (!checkCoordinate(targetRow, targetCol));
+
+    findShortestPath(targetRow, targetCol);
 }
 
+
 int main(){
-	
+	input();
 	return 0;
 }
